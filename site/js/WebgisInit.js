@@ -406,8 +406,8 @@ function postLoading() {
 		var boundingBox = wmsLoader.projectSettings.capability.nestedLayers[0].bbox;
 		//iterate over bbox - there could be more than one entry, let's select the
 		// one that matches the map projection
+		var projection_re = RegExp("^" + MapOptions.projection.getCode());
 		for (var key in boundingBox) {
-			var projection_re = RegExp("^" + MapOptions.projection.getCode());
 			if (projection_re.test(key)) {
 				var bboxArray = boundingBox[key].bbox;
 				var srs = boundingBox[key].srs;
