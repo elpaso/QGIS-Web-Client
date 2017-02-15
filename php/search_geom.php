@@ -40,10 +40,10 @@ if ($layername != "null") {
     $project = get_project($map);
 
     // Sanitize
-    $displaytext = preg_replace('/[^A-z0-9_-]\s/', '', $displaytext);
+    $displaytext = preg_replace('/[^A-z0-9_\-\s]/', '', $displaytext);
 
     // Get the search column from QS or default, sanitize
-    $search_column = preg_replace('/[^A-z0-9_-]\s/', '', @$_REQUEST['searchcolumn']);
+    $search_column = preg_replace('/[^A-z0-9_\-\s]/', '', @$_REQUEST['searchcolumn']);
     if(!$search_column){
         $search_column = $layer_config['search_column'];
     }

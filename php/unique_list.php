@@ -31,7 +31,7 @@ $layer = get_layer($layername, $project);
 try {
     $dbh = get_connection($layer, $project, $map_path);
     $ds_parms = get_layer_info($layer, $project);
-    $_field = preg_replace('/[^A-z0-9_-]]/','',$field);
+    $_field = preg_replace('/[^A-z0-9_-]/','',$field);
     $stmt = $dbh->prepare("SELECT DISTINCT $_field FROM ${ds_parms['table']} ORDER BY $_field");
     $stmt->execute();
 

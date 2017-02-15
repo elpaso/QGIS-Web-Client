@@ -64,7 +64,7 @@ function get_layer_info($layer, $project){
     foreach(explode(' ', $datasource) as $token){
         $kv = explode('=', $token);
         if(count($kv) == 2){
-            $ds_parms[$kv[0]] = $kv[1];
+            $ds_parms[$kv[0]] = preg_replace('/^\'(.*)?\'$/', '\1', $kv[1]);
         } else { // Parse (geom)
             if(preg_match('/\(([^\)]+)\)/', $kv[0], $matches)){
                 $ds_parms['geom_column'] = $matches[1];
