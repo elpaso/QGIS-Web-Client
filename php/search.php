@@ -17,6 +17,13 @@ require_once(dirname(__FILE__). '/helpers.php');
 // Params
 $map = get_map_path(@$_REQUEST['map']);
 $query = trim(@$_REQUEST['query']);
+$srid = @$_REQUEST['srid'];
+
+if($srid)
+{
+    $srid = intval(preg_replace('/[^0-9]/', '', $srid));
+}
+
 // Get project
 $project = get_project($map);
 
@@ -32,6 +39,7 @@ if (defined('THEMES_CHOOSABLE') && THEMES_CHOOSABLE) {
 // parameter name "searchtables" was not changed.
 // Search layers
 $searchlayers = @$_REQUEST['searchtables'];
+
 
 if(!$searchlayers){
     $searchlayers = DEFAULT_SEARCH_LAYERS;
@@ -50,11 +58,13 @@ foreach($_querystrings as $qs){
 /**
  * Build postgis SQL query, here also searchtable is layer name
  */
-function build_postgis_search_query($dbtable, $search_column, $geom_column, $layername, $querystrings, $sql_filter){
+function build_postgis_search_query($dbtable, $search_column, $geom_column, $layername, $querystrings, $sql_filter, $srid){
     $sql = "SELECT $search_column as displaytext, '$layername' AS searchtable, '$layername' as search_category, ";
     # the following line is responsible for zooming in to the features
     # this is supposed to work in PostgreSQL since version 9.0
-    $sql .= "'['||replace(regexp_replace(BOX2D($geom_column)::text,'BOX\(|\)','','g'),' ',',')||']'::text AS bbox ";
+    $geom_exp = $srid ? "ST_Transform($geom_column, $srid)" : "$geom_column";
+
+    $sql .= "'['||replace(regexp_replace(BOX2D($geom_exp)::text,'BOX\(|\)','','g'),' ',',')||']'::text AS bbox ";
     # if the above line does not work for you, deactivate it and uncomment the next line
     #sql .= "'['||replace(regexp_replace(BOX2D(the_geom)::text,'BOX[(]|[)]','','g'),' ',',')||']'::text AS bbox ";
     $sql .= "FROM ".$dbtable." WHERE ";
@@ -78,11 +88,12 @@ function build_postgis_search_query($dbtable, $search_column, $geom_column, $lay
 /**
  * Build spatialite SQL query, here also searchtable is layer name
  */
-function build_spatialite_search_query($dbtable, $search_column, $geom_column, $layername, $querystrings, $sql_filter){
+function build_spatialite_search_query($dbtable, $search_column, $geom_column, $layername, $querystrings, $sql_filter, $srid){
     $sql = "PRAGMA case_sensitive_like=OFF; SELECT $search_column as displaytext, '$layername' AS searchtable, '$layername' as search_category, ";
     # the following line is responsible for zooming in to the features
     # this is supposed to work in PostgreSQL since version 9.0
-    $sql .= "'['||replace(regexp_replace(envelope($geom_column),'BOX\(|\)','','g'),' ',',')||']' AS bbox ";
+    $geom_exp = $srid ? "Transform($geom_column, $srid)" : "$geom_column";
+    $sql .= "'['||replace(regexp_replace(envelope($geom_exp),'BOX\(|\)','','g'),' ',',')||']' AS bbox ";
     # if the above line does not work for you, deactivate it and uncomment the next line
     #sql .= "'['||replace(regexp_replace(BOX2D(the_geom)::text,'BOX[(]|[)]','','g'),' ',',')||']'::text AS bbox ";
     $sql .= "FROM ".$dbtable." WHERE ";
@@ -114,7 +125,8 @@ foreach($searchlayers as $layername){
                 $ds_params['geom_column'],
                 $layername,
                 $querystrings,
-                $ds_params['sql']
+                $ds_params['sql'],
+                $srid
             );
         } else {
             // Spatialite
@@ -123,7 +135,8 @@ foreach($searchlayers as $layername){
                 $ds_params['geom_column'],
                 $layername,
                 $querystrings,
-                $ds_params['sql']
+                $ds_params['sql'],
+                $srid
             );
         }
     } else {

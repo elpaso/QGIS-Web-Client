@@ -24,6 +24,8 @@ require_once(dirname(__FILE__). '/helpers.php');
 // Params
 $map = get_map_path(@$_REQUEST['map']);
 $layername = trim(@$_REQUEST['searchtable']);
+$srid = @$_REQUEST['srid'];
+
 $result = "nogeom";
 
 if ($layername != "null") {
@@ -53,7 +55,12 @@ if ($layername != "null") {
 
     $ds_params = get_layer_info($layer, $project);
 
-    $sql = "SELECT ST_AsText(${ds_params['geom_column']}) AS geom FROM " . $ds_params['table'] . " WHERE $search_column = ?";
+    if($srid)
+    {
+      $srid = intval(preg_replace('/[^0-9]/', '', $srid));
+    }
+    $geom_exp = $srid ? "ST_Transform(${ds_params['geom_column']}, $srid)" : "${ds_params['geom_column']}";
+    $sql = "SELECT ST_AsText($geom_exp) AS geom FROM " . $ds_params['table'] . " WHERE $search_column = ?";
     $dbh = get_connection($layer, $project, $map);
     $stmt = $dbh->prepare($sql);
     $stmt->bindValue(1, $displaytext, PDO::PARAM_STR);

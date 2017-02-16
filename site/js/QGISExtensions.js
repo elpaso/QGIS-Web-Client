@@ -805,6 +805,11 @@ QGIS.SearchComboBox = Ext.extend(Ext.form.ComboBox, {
     if (this.searchtables != null) {
       returnVal = this.searchtables;
     }
+    var qs = Ext.urlDecode(this.url);
+    if ( 'searchtables' in qs )
+    {
+        return qs['searchtables'];
+    }
     return returnVal;
   }
 });
