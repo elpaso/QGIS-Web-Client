@@ -17,7 +17,7 @@ function DXFExporter(parentPanel) {
 		this.DXFExportDisclaimerWindow = new Ext.Window({
 			title: DXFExportDisclaimerWindowTitle[lang],
 			height: 350,
-			width: 500,
+			width: 800,
 			layout: {
 				type:'vbox',
 				align: 'stretch'
@@ -73,7 +73,7 @@ function DXFExporter(parentPanel) {
 		this.DXFExportWindow = new Ext.Window({
 			title: DXFExportWindowTitleString[lang],
 			height: 67,
-			width: 800,
+			width: 700,
 			layout: "fit",
 			renderTo: this.parentPanel,
 			resizable: false,
@@ -146,6 +146,7 @@ function DXFExporter(parentPanel) {
 						text: exportButtonTextString[lang],
 						tooltipType: 'qtip',
 						iconCls: '',
+						cls: 'force-button-border',
 						scale: 'medium',
 						id: 'DXFStartExporting',
 						listeners: {
@@ -190,6 +191,7 @@ function DXFExporter(parentPanel) {
 						text: printCancelButtonTextString[lang],
 						tooltipType: 'qtip',
 						iconCls: '',
+						cls: 'force-button-border',
 						scale: 'medium',
 						id: 'DXFCancelExporting',
 						listeners: {
@@ -247,6 +249,8 @@ DXFExporter.prototype.startDXFExport = function () {
 			showDXFExportDisclaimer = true;
 		}
 	}
+	// Default to no limits
+	Ext.getCmp('DXFExportAreaLimitLabel').update(DXFExportAreaLimitLabel[lang] + DXFExportNoAreaLimitLabel[lang]);
 	if (mapThemeSwitcher !== null && typeof(mapThemeSwitcher.activeProjectData) !== 'undefined') {
 		if (mapThemeSwitcher.activeProjectData.DXFExportDownloadDisclaimer) {
 			if (mapThemeSwitcher.activeProjectData.DXFExportDownloadDisclaimer.length > 1) {
@@ -257,13 +261,10 @@ DXFExporter.prototype.startDXFExport = function () {
 		if (mapThemeSwitcher.activeProjectData.DXFExportMaxArea) {
 			Ext.getCmp('DXFExportAreaLimitLabel').update(DXFExportAreaLimitLabel[lang] + parseInt(mapThemeSwitcher.activeProjectData.DXFExportMaxArea).toLocaleString() + " m2");
 		}
-		else {
-			Ext.getCmp('DXFExportAreaLimitLabel').update(DXFExportAreaLimitLabel[lang] + DXFExportNoAreaLimitLabel[lang]);
-		}
-		//need to register navigate events to keep current DXF export size up-to-date
-		geoExtMap.map.events.register("moveend",geoExtMap.map,this.updateCurrentArea);
-		this.updateCurrentArea();
 	}
+	//need to register navigate events to keep current DXF export size up-to-date
+	geoExtMap.map.events.register("moveend", geoExtMap.map,this.updateCurrentArea);
+	this.updateCurrentArea();
 	//deal with dxf export scale limits
 	var scaleCombobox = Ext.getCmp('DXFExportScaleCombobox');
 	var scaleDataStore = scaleCombobox.getStore();
@@ -315,7 +316,7 @@ DXFExporter.prototype.updateCurrentArea = function () {
 	var myDXFExportCurrentAreaLabel = Ext.getCmp("DXFExportCurrentAreaLabel");
 	var DXFStartExportingButton = Ext.getCmp("DXFStartExporting");
 	myDXFExportCurrentAreaLabel.update(", "+DXFExportCurrentAreaLabel[lang] + Math.round(geoExtMap.map.getExtent().getWidth() * geoExtMap.map.getExtent().getHeight()).toLocaleString() + " m2");
-	if ((geoExtMap.map.getExtent().getWidth() * geoExtMap.map.getExtent().getHeight()) > mapThemeSwitcher.activeProjectData.DXFExportMaxArea) {
+	if (gis_projects && (geoExtMap.map.getExtent().getWidth() * geoExtMap.map.getExtent().getHeight()) > mapThemeSwitcher.activeProjectData.DXFExportMaxArea) {
 		myDXFExportCurrentAreaLabel.addClass("DXFExportCurrentAreaLabel");
 		DXFStartExportingButton.disable();
 	}

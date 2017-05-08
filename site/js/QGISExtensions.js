@@ -960,7 +960,8 @@ QGIS.SearchPanel = Ext.extend(Ext.Panel, {
                 valueQuotes = "'";
             }
             else {
-                valueQuotes = "";
+                // ABP: also quote numbers?
+                valueQuotes = "'";
             }
         }
        if (field.initialConfig.filterOp.indexOf('LIKE')>-1) {
